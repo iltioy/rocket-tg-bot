@@ -6,8 +6,10 @@ const { default: mongoose } = require("mongoose");
 const { starterMessage } = require("./utils/messages");
 
 const mailer = require("./services/mailing");
+const actions = require("./utils/actions");
 
 const ChatInfoScene = require("./scenes/ChatInfoScene");
+const { sendMenu } = require("./utils/markups");
 const stage = new Scenes.Stage([ChatInfoScene]);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -15,6 +17,7 @@ bot.use(session());
 bot.use(stage.middleware());
 
 mailer(bot);
+actions(bot);
 
 bot.start(async (ctx) => {
     try {
@@ -33,8 +36,8 @@ bot.start(async (ctx) => {
     }
 });
 
-bot.command("info", (ctx) => {
-    ctx.scene.enter("CHAT_INFO_GATHERING");
+bot.command("menu", (ctx) => {
+    sendMenu(ctx);
 });
 
 const start = async () => {

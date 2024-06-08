@@ -40,6 +40,7 @@ const dmExctractor = (rooms) => {
 
         let extractedRoom = {
             room_id: room._id,
+            usernames: room.usernames,
             lastMessage,
         };
 

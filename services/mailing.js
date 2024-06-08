@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const { dmExctractor } = require("../utils/extractors");
 const { getNotificationMessage } = require("../utils/messages");
-const { getRooms } = require("../utils/queries");
+const { getRooms, getMe } = require("../utils/queries");
 
 module.exports = (bot) => {
     const mailer = async () => {
@@ -36,7 +36,13 @@ module.exports = (bot) => {
                 domain: user.rocket_domain,
             });
 
-            if (!rooms) {
+            const me = await getMe({
+                token: user.rocket_token,
+                user_id: user.rocket_user_id,
+                domain: user.rocket_domain,
+            });
+
+            if (!rooms || !me.username) {
                 return;
             }
 
@@ -47,7 +53,14 @@ module.exports = (bot) => {
                 oldLastMessageIds.push(room.lastMessage.id);
             });
             const mailableRooms = dmRooms.filter(
-                (room) => !oldLastMessageIds.includes(room.lastMessage.id)
+                (room) =>
+                    !oldLastMessageIds.includes(room.lastMessage.id) &&
+                    room.lastMessage.username !== me.username
+            );
+
+            await User.updateOne(
+                { chat_id: user.chat_id },
+                { dm_chat_list: dmRooms }
             );
 
             mailableRooms.forEach((room) => {
@@ -63,5 +76,5 @@ module.exports = (bot) => {
         }
     };
 
-    mailer();
+    setInterval(mailer, 10000);
 };

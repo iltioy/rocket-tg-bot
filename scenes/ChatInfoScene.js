@@ -5,37 +5,52 @@ const { dmExctractor } = require("../utils/extractors");
 
 const ChatInfoScene = new Scenes.WizardScene(
     "CHAT_INFO_GATHERING",
-    (ctx) => {
-        ctx.reply("Обновление информации об аккаунте рокет чата...");
-        ctx.reply("Введите ваш токен");
-        ctx.wizard.state.chat_info_data = {};
-        return ctx.wizard.next();
-    },
-    (ctx) => {
-        const token = ctx.message.text;
-
-        if (!token) {
-            ctx.reply("Пожалуйста, введите токен!");
-            return;
+    async (ctx) => {
+        try {
+            await ctx.reply("Обновление информации об аккаунте рокет чата...");
+            await ctx.reply("Введите ваш токен");
+            ctx.wizard.state.chat_info_data = {};
+            return ctx.wizard.next();
+        } catch (error) {
+            ctx.scene.leave();
+            console.log(error);
         }
-
-        ctx.wizard.state.chat_info_data.token = token;
-        ctx.reply("Теперь отпрвьте свой user id из рокета");
-        return ctx.wizard.next();
     },
-    (ctx) => {
-        const user_id = ctx.message.text;
+    async (ctx) => {
+        try {
+            const token = ctx.message.text;
 
-        if (!user_id) {
-            ctx.reply("Пожалуйста, введите user id!");
-            return;
+            if (!token) {
+                ctx.reply("Пожалуйста, введите токен!");
+                return;
+            }
+
+            ctx.wizard.state.chat_info_data.token = token;
+            await ctx.reply("Теперь отпрвьте свой user id из рокета");
+            return ctx.wizard.next();
+        } catch (error) {
+            console.log(error);
+            ctx.scene.leave();
         }
+    },
+    async (ctx) => {
+        try {
+            const user_id = ctx.message.text;
 
-        ctx.wizard.state.chat_info_data.user_id = user_id;
-        ctx.reply(
-            "Отлично! Последний шаг - введите домен вашего чата (без https://, например example.chat.ru)"
-        );
-        return ctx.wizard.next();
+            if (!user_id) {
+                ctx.reply("Пожалуйста, введите user id!");
+                return;
+            }
+
+            ctx.wizard.state.chat_info_data.user_id = user_id;
+            await ctx.reply(
+                "Отлично! Последний шаг - введите домен вашего чата (без https://, например example.chat.ru)"
+            );
+            return ctx.wizard.next();
+        } catch (error) {
+            console.log(error);
+            ctx.scene.leave();
+        }
     },
     async (ctx) => {
         try {
@@ -49,15 +64,17 @@ const ChatInfoScene = new Scenes.WizardScene(
             ctx.wizard.state.chat_info_data.domain = domain;
             const { token, user_id } = ctx.wizard.state.chat_info_data;
 
-            ctx.reply("Проверяем корректность введёных данных...");
+            await ctx.reply("Проверяем данные...");
             const me = await getMe({ token, user_id, domain });
 
             if (!me.username) {
-                ctx.reply("Введены некорректные данные! Попробуйте снова");
+                await ctx.reply(
+                    "Введены некорректные данные! Попробуйте снова"
+                );
                 return ctx.scene.leave();
             }
 
-            ctx.reply(
+            await ctx.reply(
                 `Выполнен вход под пользователем ${me.username}! Уже начинаем получать сообщения...`
             );
 
@@ -73,10 +90,12 @@ const ChatInfoScene = new Scenes.WizardScene(
                     dm_chat_list: dmRooms,
                 }
             );
-            ctx.scene.leave();
+            await ctx.scene.leave();
         } catch (error) {
-            ctx.reply("Неизвестная ошибка...");
-            ctx.scene.leave();
+            ctx.reply(
+                `Неизвестная ошибка...\nПроверьте корректность введённых данных и повторите снова`
+            );
+            await ctx.scene.leave();
         }
     }
 );

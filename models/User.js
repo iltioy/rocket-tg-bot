@@ -5,6 +5,7 @@ const DmRocketChatSchema = new Schema({
         type: String,
         required: true,
     },
+    usernames: [String],
     lastMessage: {
         id: String,
         msg: String,
