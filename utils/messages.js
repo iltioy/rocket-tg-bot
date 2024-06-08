@@ -5,4 +5,11 @@ const starterMessage = `
 Версия бота: 0.1
 `;
 
-module.exports = { starterMessage };
+const getNotificationMessage = ({ from_name, msg }) => {
+    return `
+    Новое сообщение в чате с ${from_name}!
+    "${msg}"
+    `;
+};
+
+module.exports = { starterMessage, getNotificationMessage };

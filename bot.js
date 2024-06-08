@@ -5,12 +5,16 @@ const User = require("./models/User");
 const { default: mongoose } = require("mongoose");
 const { starterMessage } = require("./utils/messages");
 
+const mailer = require("./services/mailing");
+
 const ChatInfoScene = require("./scenes/ChatInfoScene");
 const stage = new Scenes.Stage([ChatInfoScene]);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session());
 bot.use(stage.middleware());
+
+mailer(bot);
 
 bot.start(async (ctx) => {
     try {

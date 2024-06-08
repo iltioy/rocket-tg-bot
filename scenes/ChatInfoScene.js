@@ -1,6 +1,7 @@
 const { Scenes } = require("telegraf");
-const { getMe } = require("../utils/queries");
+const { getMe, getRooms } = require("../utils/queries");
 const User = require("../models/User");
+const { dmExctractor } = require("../utils/extractors");
 
 const ChatInfoScene = new Scenes.WizardScene(
     "CHAT_INFO_GATHERING",
@@ -49,22 +50,27 @@ const ChatInfoScene = new Scenes.WizardScene(
             const { token, user_id } = ctx.wizard.state.chat_info_data;
 
             ctx.reply("Проверяем корректность введёных данных...");
-            const res = await getMe(token, user_id, domain);
+            const me = await getMe({ token, user_id, domain });
 
-            if (!res.username) {
+            if (!me.username) {
                 ctx.reply("Введены некорректные данные! Попробуйте снова");
                 return ctx.scene.leave();
             }
 
             ctx.reply(
-                `Выполнен вход под пользователем ${res.username}! Уже начинаем получать сообщения...`
+                `Выполнен вход под пользователем ${me.username}! Уже начинаем получать сообщения...`
             );
+
+            const rooms = await getRooms({ token, user_id, domain });
+            const dmRooms = dmExctractor(rooms.update);
+
             await User.updateOne(
                 { chat_id: ctx.chat.id },
                 {
                     rocket_domain: domain,
                     rocket_token: token,
                     rocket_user_id: user_id,
+                    dm_chat_list: dmRooms,
                 }
             );
             ctx.scene.leave();
