@@ -13,6 +13,7 @@
     "dependencies": {
         "@telegraf/types": "^7.1.0",
         "axios": "^1.7.2",
+        "crypto-js": "^4.2.0",
         "dotenv": "^16.4.5",
         "mongodb": "^6.7.0",
         "mongoose": "^8.4.1",

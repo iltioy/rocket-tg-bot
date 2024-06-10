@@ -158,7 +158,7 @@ module.exports = (bot) => {
         const user = await User.findOne({ chat_id: ctx.chat.id });
 
         const me = await getMe({
-            token: user.rocket_token,
+            token: user.getToken(),
             user_id: user.rocket_user_id,
             domain: user.rocket_domain,
         });

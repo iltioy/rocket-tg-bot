@@ -31,13 +31,13 @@ module.exports = (bot) => {
             }
 
             const rooms = await getRooms({
-                token: user.rocket_token,
+                token: user.getToken(),
                 user_id: user.rocket_user_id,
                 domain: user.rocket_domain,
             });
 
             const me = await getMe({
-                token: user.rocket_token,
+                token: user.getToken(),
                 user_id: user.rocket_user_id,
                 domain: user.rocket_domain,
             });

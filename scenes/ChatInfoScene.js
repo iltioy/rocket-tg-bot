@@ -2,6 +2,7 @@ const { Scenes } = require("telegraf");
 const { getMe, getRooms } = require("../utils/queries");
 const User = require("../models/User");
 const { dmExctractor } = require("../utils/extractors");
+const Crypto = require("crypto-js");
 
 const ChatInfoScene = new Scenes.WizardScene(
     "CHAT_INFO_GATHERING",
@@ -80,12 +81,16 @@ const ChatInfoScene = new Scenes.WizardScene(
 
             const rooms = await getRooms({ token, user_id, domain });
             const dmRooms = dmExctractor(rooms.update);
+            const encryptedToken = Crypto.AES.encrypt(
+                token,
+                process.env.ENCRYPTION_TOKEN
+            ).toString();
 
             await User.updateOne(
                 { chat_id: ctx.chat.id },
                 {
                     rocket_domain: domain,
-                    rocket_token: token,
+                    rocket_token: encryptedToken,
                     rocket_user_id: user_id,
                     dm_chat_list: dmRooms,
                 }

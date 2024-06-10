@@ -17,7 +17,7 @@ module.exports = () => {
         try {
             console.log("keeping user");
             const me = await getMe({
-                token: user.rocket_token,
+                token: user.getToken(),
                 user_id: user.rocket_user_id,
                 domain: user.rocket_domain,
             });
@@ -25,7 +25,7 @@ module.exports = () => {
             if (!me.username) return;
 
             await keepOnline({
-                token: user.rocket_token,
+                token: user.getToken(),
                 user_id: user.rocket_user_id,
                 domain: user.rocket_domain,
                 status: user.keep_alive.status || "online",

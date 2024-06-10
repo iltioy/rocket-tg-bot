@@ -1,4 +1,5 @@
 const { model, Schema } = require("mongoose");
+const Crypto = require("crypto-js");
 
 const DmRocketChatSchema = new Schema({
     room_id: {
@@ -44,5 +45,17 @@ const UserSchema = new Schema({
     },
     dm_chat_list: [DmRocketChatSchema],
 });
+
+UserSchema.methods.getToken = function () {
+    if (!this.rocket_token) return "";
+
+    const bytes = Crypto.AES.decrypt(
+        this.rocket_token,
+        process.env.ENCRYPTION_TOKEN
+    );
+    const decryptedToken = bytes.toString(Crypto.enc.Utf8);
+
+    return decryptedToken;
+};
 
 module.exports = model("User", UserSchema);
