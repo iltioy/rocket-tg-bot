@@ -5,7 +5,7 @@ const starterMessage = `
 
 /menu - открыть меню со всеми возможностями
 
-Версия бота: 0.1
+Версия бота: 0.3
 `;
 
 const getNotificationMessage = ({ from_name, msg }) => {

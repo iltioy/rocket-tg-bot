@@ -55,7 +55,7 @@ module.exports = (bot) => {
             const mailableRooms = dmRooms.filter(
                 (room) =>
                     !oldLastMessageIds.includes(room.lastMessage.id) &&
-                    room.lastMessage.username !== me.username
+                    room.lastMessage?.from?.username !== me.username
             );
 
             await User.updateOne(

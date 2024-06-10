@@ -8,13 +8,13 @@ const sendMenu = (ctx) => {
         [Markup.button.callback("Информация об аккаунте", "me_info")],
         [
             Markup.button.callback(
-                "Информация об просматриваемых дм частах",
+                "Информация об просматриваемых дм чатах",
                 "dm_chats_info"
             ),
         ],
     ];
 
-    ctx.replyWithHTML("Выберите действие:", Markup.inlineKeyboard(fields));
+    ctx.replyWithHTML("Выберите действие", Markup.inlineKeyboard(fields));
 };
 
 module.exports = { sendMenu };
