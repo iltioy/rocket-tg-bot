@@ -1,4 +1,9 @@
 const User = require("../models/User");
+const {
+    sendOnlineSettings,
+    sendOnlineStatuses,
+    sendMenu,
+} = require("./markups");
 const { getMe } = require("./queries");
 
 module.exports = (bot) => {
@@ -10,15 +15,9 @@ module.exports = (bot) => {
     bot.action("me_info", async (ctx) => {
         try {
             ctx.deleteMessage();
-            const user = await User.findOne({ chat_id: ctx.chat.id });
+            const { user, me } = await checkUser(ctx);
 
-            const me = await getMe({
-                token: user.rocket_token,
-                user_id: user.rocket_user_id,
-                domain: user.rocket_domain,
-            });
-
-            if (!me.username) {
+            if (!me?.username) {
                 await ctx.reply("К чату не привязан аккаунт рокета!");
                 return;
             }
@@ -37,15 +36,9 @@ module.exports = (bot) => {
     bot.action("dm_chats_info", async (ctx) => {
         try {
             ctx.deleteMessage();
-            const user = await User.findOne({ chat_id: ctx.chat.id });
+            const { user, me } = await checkUser(ctx);
 
-            const me = await getMe({
-                token: user.rocket_token,
-                user_id: user.rocket_user_id,
-                domain: user.rocket_domain,
-            });
-
-            if (!me.username) {
+            if (!me?.username) {
                 await ctx.reply("К чату не привязан аккаунт рокета!");
                 return;
             }
@@ -84,5 +77,105 @@ module.exports = (bot) => {
             );
             console.log(error);
         }
+    });
+
+    bot.action(/me_set_status \w*/g, async (ctx) => {
+        try {
+            await ctx.deleteMessage();
+
+            const { me, user } = await checkUser(ctx);
+
+            if (!me?.username) {
+                await ctx.reply("К чату не привязан аккаунт рокета!");
+                return;
+            }
+
+            const availableStatuses = ["online", "away", "busy", "offline"];
+
+            const query = ctx.match[0];
+            if (query.split(" ").length !== 2) {
+                await ctx.reply("Не указан статус для установки!");
+                return;
+            }
+
+            const status = query.split(" ")[1];
+
+            if (!availableStatuses.includes(status)) {
+                await ctx.reply("Неверный статус для установки!");
+                return;
+            }
+
+            await User.updateOne(
+                {
+                    chat_id: user.chat_id,
+                },
+                {
+                    keep_alive: {
+                        status,
+                        active: user.keep_alive?.active,
+                    },
+                }
+            );
+
+            await ctx.reply(`Статус успешно установлен на ${status}!`);
+        } catch (error) {
+            await ctx.reply(
+                "Ошибка при полученнии данных об аккаунте\nПроверьте корректность привязанных данных"
+            );
+            console.log(error);
+        }
+    });
+
+    bot.action("me_toggle_keep_alive", async (ctx) => {
+        try {
+            const { me, user } = await checkUser(ctx);
+
+            if (!me?.username) {
+                await ctx.reply("К чату не привязан аккаунт рокета!");
+                return;
+            }
+
+            await User.updateOne(
+                { chat_id: user.chat_id },
+                {
+                    keep_alive: {
+                        active: !user.keep_alive?.active,
+                        status: user.keep_alive?.status,
+                    },
+                }
+            );
+
+            await sendOnlineSettings(ctx);
+        } catch (error) {
+            await ctx.reply(
+                "Ошибка при полученнии данных об аккаунте\nПроверьте корректность привязанных данных"
+            );
+            console.log(error);
+        }
+    });
+
+    const checkUser = async (ctx) => {
+        const user = await User.findOne({ chat_id: ctx.chat.id });
+
+        const me = await getMe({
+            token: user.rocket_token,
+            user_id: user.rocket_user_id,
+            domain: user.rocket_domain,
+        });
+
+        return { user, me };
+    };
+
+    bot.action("me_status", async (ctx) => {
+        await sendOnlineSettings(ctx);
+    });
+
+    bot.action("me_set_status", async (ctx) => {
+        await sendOnlineStatuses(ctx);
+    });
+
+    bot.action("send_menu", async (ctx) => {
+        await ctx.deleteMessage();
+        await sendMenu(ctx);
     });
 };

@@ -31,6 +31,17 @@ const UserSchema = new Schema({
     rocket_domain: {
         type: String,
     },
+    keep_alive: {
+        status: {
+            type: String,
+            enum: ["online", "away", "busy", "offline"],
+            default: "online",
+        },
+        active: {
+            type: Boolean,
+            default: false,
+        },
+    },
     dm_chat_list: [DmRocketChatSchema],
 });
 
